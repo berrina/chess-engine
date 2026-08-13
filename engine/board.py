@@ -232,8 +232,3 @@ class Board:
                     total -= value  # Black piece, subtract from total
 
         return total
-
-b = Board()
-print(b.evaluate())
-          
-
