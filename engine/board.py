@@ -144,27 +144,47 @@ class Board:
 # the + and - matter most in terms of like moving up because pawns are the one piece where color changes the actual shape of movement, not just who owns what
 # White pawns move with +row (toward row 7), Black pawns move with -row (toward row 0)
 
-    def pawn_moves (self, row, col): 
-        # returns the list fo valid pawn moves from teh given position 
+    def pawn_moves(self, row, col):
+        # returns the list of valid pawn moves from the given position
         moves = []
         piece = self.piece_at(row, col)
-        if piece is None: 
-            return moves # no pawn at this position 
-        elif piece == "P": # a white pawn 
-            # move forward one square 
-            if self.is_on_board(row + 1, col) and self.piece_at(row + 1, col) is None: 
+        if piece is None:
+            return moves  # no pawn at this position
+
+        elif piece == "P":  # a white pawn
+            # move forward one square
+            if self.is_on_board(row + 1, col) and self.piece_at(row + 1, col) is None:
                 moves.append((row + 1, col))
-                # move forward two squares from starting position 
-                if row == 1 and self.piece_at(row + 2, col) is None: 
-                    moves.append((row + 2, col)) 
-        elif piece == "p": # a black pawn
-            # move foward one square 
-            if self.is_on_board(row - 1, col) and self.piece_at(row - 1, col) is None: 
+                # move forward two squares from starting position
+                if row == 1 and self.piece_at(row + 2, col) is None:
+                    moves.append((row + 2, col))
+
+            # diagonal captures
+            for dc in [-1, 1]:
+                cap_row, cap_col = row + 1, col + dc
+                if self.is_on_board(cap_row, cap_col):
+                    target = self.piece_at(cap_row, cap_col)
+                    if target is not None and self.is_enemy_piece(target):
+                        moves.append((cap_row, cap_col))
+
+        elif piece == "p":  # a black pawn
+            # move forward one square
+            if self.is_on_board(row - 1, col) and self.piece_at(row - 1, col) is None:
                 moves.append((row - 1, col))
-                # move forward two squares from starting position 
-                if row == 6 and self.piece_at(row - 2, col) is None: 
-                    moves.append((row - 2, col)) 
-        return moves 
+                # move forward two squares from starting position
+                if row == 6 and self.piece_at(row - 2, col) is None:
+                    moves.append((row - 2, col))
+
+            # diagonal captures
+            for dc in [-1, 1]:
+                cap_row, cap_col = row - 1, col + dc
+                if self.is_on_board(cap_row, cap_col):
+                    target = self.piece_at(cap_row, cap_col)
+                    if target is not None and self.is_enemy_piece(target):
+                        moves.append((cap_row, cap_col))
+
+        return moves
+    
 
     def legal_moves(self):
         # returns the list of legal moves, as ((from_row, from_col), (to_row, to_col)) pairs
@@ -232,3 +252,42 @@ class Board:
                     total -= value  # Black piece, subtract from total
 
         return total
+    
+    def find_king(self, color): 
+        king_letter = "K" if color == "w" else "k"
+        for row in range(8): 
+            for col in range(8): 
+                if self.piece_at(row, col) == king_letter: 
+                    return(row, col) 
+        return None # King not found 
+
+
+    def is_in_check(self, color): 
+        # check if the king of the give color is in check 
+        # by looking at all the legal moves of the opponent 
+        # and seeing if any of them capture the king 
+        king_pos = self.find_king(color) 
+        enemy_color = "b" if color == "w" else "w"
+        original_turn = self.turn 
+        self.turn = enemy_color 
+        enemy_moves = self.legal_moves() 
+        self.turn = original_turn 
+        for (from_sq, to_sq) in enemy_moves: 
+            if to_sq == king_pos: 
+                return True 
+        return False 
+
+    
+    def get_truly_legal_moves(self): 
+        # returns the list of legal moves that 
+        # do not leave the current player's king in check 
+        pseudo_legal = self.legal_moves() 
+        truly_legal = []
+        mover_color = self.turn 
+
+        for move in pseudo_legal: 
+            new_board = self.make_move(move)
+            if not new_board.is_in_check(mover_color): 
+                truly_legal.append(move)
+        return truly_legal
+
