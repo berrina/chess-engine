@@ -55,5 +55,39 @@ class Board:
             board_str += "\n" # new line after each row 
         return board_str 
 
+    
+    def is_enemy_piece(self, piece): 
+        # check if the piece belongs to oppoenent based on the current turn and case of the piece
+        if self.turn == "w": 
+            return piece is not None and piece.islower() #black pieces are lower caps 
+        else: 
+            return piece is not None and piece.isupper() # white pieces are upper case
+            
+
+# move generation will be for 6 pieces: pawn, knight, bishop, rook, queen, king
+
+    def knight_moves(self, row, col):
+    # returns the list of valid knight moves from the given position of row and col
+        moves = []
+        knight_offsets = [(-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1)]
+        for (dr, dc) in knight_offsets:
+                new_row, new_col = row + dr, col + dc
+                if self.is_on_board(new_row, new_col):
+                    target_piece = self.piece_at(new_row, new_col)
+                    if target_piece is None: 
+                        moves.append((new_row, new_col)) # valid move (empty square)
+                    elif self.is_enemy_piece(target_piece): 
+                        moves.append((new_row, new_col)) # valid move (capture) 
+                    else: 
+                        pass # own piece, so skip it 
+        return moves 
+
+                    
+        return moves
+
 b = Board()
-print(b)
+print(b.knight_moves(0, 1))  # White's knight starts on b1, that's row 0, col 1 in your layout
+
+   
+          
+
