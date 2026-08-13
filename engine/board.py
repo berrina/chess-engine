@@ -63,7 +63,14 @@ class Board:
         else: 
             return piece is not None and piece.isupper() # white pieces are upper case
             
+    def is_own_piece(self, piece): 
+        #check if piece equals to to the current turn and case of the piece 
+        if self.turn == "w": 
+            return piece is not None and piece.isupper() 
+        else: 
+            return piece is not None and piece.islower() 
 
+        
 # move generation will be for 6 pieces: pawn, knight!, bishop-, rook-, queen-, king
 
     def knight_moves(self, row, col):
@@ -133,12 +140,66 @@ class Board:
                     pass # own piece, so skip it 
         return moves 
 
+# the + and - matter most in terms of like moving up because pawns are the one piece where color changes the actual shape of movement, not just who owns what
+# White pawns move with +row (toward row 7), Black pawns move with -row (toward row 0)
+
+    def pawn_moves (self, row, col): 
+        # returns the list fo valid pawn moves from teh given position 
+        moves = []
+        piece = self.piece_at(row, col)
+        if piece is None: 
+            return moves # no pawn at this position 
+        elif piece == "P": # a white pawn 
+            # move forward one square 
+            if self.is_on_board(row + 1, col) and self.piece_at(row + 1, col) is None: 
+                moves.append((row + 1, col))
+                # move forward two squares from starting position 
+                if row == 1 and self.piece_at(row + 2, col) is None: 
+                    moves.append((row + 2, col)) 
+        elif piece == "p": # a black pawn
+            # move foward one square 
+            if self.is_on_board(row - 1, col) and self.piece_at(row - 1, col) is None: 
+                moves.append((row - 1, col))
+                # move forward two squares from starting position 
+                if row == 6 and self.piece_at(row - 2, col) is None: 
+                    moves.append((row - 2, col)) 
+        return moves 
+
+    def legal_moves(self):
+        # returns the list of legal moves, as ((from_row, from_col), (to_row, to_col)) pairs
+        all_moves = []
+        for row in range(8):
+            for col in range(8):
+                piece = self.piece_at(row, col)
+                if piece is None:
+                    continue
+                if self.is_own_piece(piece):
+                    if piece.lower() == "p":
+                        destinations = self.pawn_moves(row, col)
+                    elif piece.lower() == "n":
+                        destinations = self.knight_moves(row, col)
+                    elif piece.lower() == "b":
+                        destinations = self.bishop_moves(row, col)
+                    elif piece.lower() == "r":
+                        destinations = self.rook_moves(row, col)
+                    elif piece.lower() == "q":
+                        destinations = self.queen_moves(row, col)
+                    elif piece.lower() == "k":
+                        destinations = self.king_moves(row, col)
+                    else:
+                        destinations = []
+
+                    for destination in destinations:
+                        all_moves.append(((row, col), destination))
+
+        return all_moves
+
 b = Board()
-print(b.rook_moves(4,3)) 
-print(b.bishop_moves(0,3))
-print(b.queen_moves(0,3))
-print(b.king_moves(0,4)) 
+print(len(b.legal_moves()))
 
    
+
+
+
           
 
