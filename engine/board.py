@@ -1,4 +1,5 @@
 # engine/board.py
+import copy
 
 class Board:
     def __init__(self):
@@ -194,11 +195,29 @@ class Board:
 
         return all_moves
 
+    def make_move(self, move):
+        # move the piece from (from_row, from_col) to (to_row, to_col) 
+        from_square, to_square = move 
+        from_row, from_col = from_square 
+        to_row, to_col = to_square 
+
+        new_board = copy.deepcopy(self)
+
+        piece = new_board.piece_at(from_row, from_col)
+
+        new_board.squares[to_row][to_col] = piece 
+        new_board.squares[from_row][from_col] = None 
+
+        new_board.turn = "b" if new_board.turn == "w" else "w"
+
+        return new_board         
+
 b = Board()
-print(len(b.legal_moves()))
-
-   
-
+move = ((1, 0), (3, 0))  # white pawn from a2 forward two squares to a4
+new_b = b.make_move(move)
+print(new_b)
+print(new_b.turn)
+print(b)  # confirm original board is UNCHANGED
 
 
           
