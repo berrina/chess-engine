@@ -64,7 +64,7 @@ class Board:
             return piece is not None and piece.isupper() # white pieces are upper case
             
 
-# move generation will be for 6 pieces: pawn, knight, bishop, rook, queen, king
+# move generation will be for 6 pieces: pawn, knight!, bishop-, rook-, queen-, king
 
     def knight_moves(self, row, col):
     # returns the list of valid knight moves from the given position of row and col
@@ -81,12 +81,63 @@ class Board:
                     else: 
                         pass # own piece, so skip it 
         return moves 
+    
+    def sliding_moves (self, row, col, directions): 
+        # returns the list of valid sliding moves (bishop, rook, queen) from the given position of the piece at row and col, based on the provided directions
+        moves = [] 
+        for (dr, dc) in directions: 
+           new_row, new_col = row + dr, col + dc
+           while self.is_on_board(new_row, new_col):
+               target_piece = self.piece_at(new_row, new_col)
+               if target_piece is None: 
+                   moves.append((new_row, new_col)) # valud move (empty square) 
+               elif self.is_enemy_piece(target_piece): 
+                   moves.append((new_row, new_col)) # valid move (capture) 
+                   break # cant move past enemy space 
+               else: 
+                   break # own piece, so stop sliding in this direction 
+               new_row += dr
+               new_col += dc
 
-                    
-        return moves
+        return moves  
+
+    def rook_moves (self, row, col): 
+        # rook moves horizntally and vertically, so we call upon function above (sliding_moves) 
+        directions = [(-1,0), (1,0), (0,-1), (0,1)] # up, down, left, right 
+        return self.sliding_moves(row, col, directions) 
+    
+    def bishop_moves (self, row, col): 
+        # bishop moves diagonally, so we call upon same sliding function above 
+        directions = [(-1,-1), (-1,1), (1,-1), (1,1)] # directions for diagonal movement 
+        return self.sliding_moves(row, col, directions) 
+
+    def queen_moves (self, row, col): 
+        # queen moves like both rook and bishop, so we combine their directions 
+        directions = [(-1,0), (1,0), (0,-1), (0,1), (-1,-1), (-1,1), (1,-1), (1,1)] # all 8 directions 
+        return self.sliding_moves(row, col, directions)
+
+
+    def king_moves (self, row, col): 
+        # king moves one square in any direction, so we limit to one step 
+        directions = [(-1,0), (1,0), (0,-1), (0,1), (-1,-1), (-1,1), (1,-1), (1,1)] 
+        moves = [] 
+        for (dr, dc) in directions: 
+            new_row, new_col = row + dr, col + dc 
+            if self.is_on_board(new_row, new_col):
+                target_piece = self.piece_at(new_row, new_col)
+                if target_piece is None: 
+                    moves.append((new_row, new_col)) # valid move (empty square)
+                elif self.is_enemy_piece(target_piece): 
+                    moves.append((new_row, new_col)) # valid move (capture) 
+                else: 
+                    pass # own piece, so skip it 
+        return moves 
 
 b = Board()
-print(b.knight_moves(0, 1))  # White's knight starts on b1, that's row 0, col 1 in your layout
+print(b.rook_moves(4,3)) 
+print(b.bishop_moves(0,3))
+print(b.queen_moves(0,3))
+print(b.king_moves(0,4)) 
 
    
           
