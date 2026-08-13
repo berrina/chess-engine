@@ -212,13 +212,28 @@ class Board:
 
         return new_board         
 
+    def evaluate(self):
+        # simple evaluation function based on material count 
+        piece_values = {"p": 1, "n": 3, "b": 3, "r": 5, "q": 9}
+        # chess convention of which piece is valued more like more important pieces are worth more points
+        total = 0
+
+        for row in range(8):
+            for col in range(8):
+                piece = self.piece_at(row, col)
+                if piece is None:
+                    continue
+
+                value = piece_values.get(piece.lower(), 0)  # king (or anything unknown) scores 0
+
+                if piece.isupper():
+                    total += value  # White piece, add to total
+                else:
+                    total -= value  # Black piece, subtract from total
+
+        return total
+
 b = Board()
-move = ((1, 0), (3, 0))  # white pawn from a2 forward two squares to a4
-new_b = b.make_move(move)
-print(new_b)
-print(new_b.turn)
-print(b)  # confirm original board is UNCHANGED
-
-
+print(b.evaluate())
           
 
